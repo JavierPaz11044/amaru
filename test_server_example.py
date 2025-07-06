@@ -9,7 +9,12 @@ Usage:
 3. Update Android app SERVER_URL to point to your computer's IP
 4. Start monitoring in the app to see data being received
 
-The server will save received data to logs/ directory for analysis.
+The server will receive and display:
+- 30 network flow records per batch
+- PyTorch AI analysis results
+- Risk assessments and recommendations
+
+All data is saved to logs/ directory for analysis.
 """
 
 from flask import Flask, request, jsonify
@@ -68,6 +73,8 @@ def receive_batch():
             'message': 'Batch received successfully',
             'deviceId': data.get('deviceId'),
             'recordsReceived': len(flows),
+            'pytorchAnalysisIncluded': pytorch_analysis is not None,
+            'riskLevel': pytorch_analysis.get('riskLevel', 'Unknown') if pytorch_analysis else 'No Analysis',
             'timestamp': timestamp
         }
         
@@ -92,6 +99,8 @@ if __name__ == '__main__':
     print("📡 Server will receive data on: http://localhost:5000")
     print("💡 Update your Android app to use: http://YOUR_IP:5000")
     print("🔍 Data will be saved to logs/ directory")
+    print("🧠 Will display PyTorch AI analysis results")
+    print("🔴 Will show risk assessments and recommendations")
     print("=" * 50)
     
     app.run(host='0.0.0.0', port=5000, debug=True) 

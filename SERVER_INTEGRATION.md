@@ -71,6 +71,12 @@ The `pytorchAnalysis` object contains the following fields:
 - **`recommendations`**: Array of recommendation strings
 - **`analysisTimestamp`**: Timestamp when the analysis was performed
 
+### Analysis Availability
+- **Normal Case**: When PyTorch model is active, full analysis results are included
+- **Model Not Initialized**: Fallback analysis with `modelStatus: "Not initialized"`
+- **Analysis Error**: Error analysis with `modelStatus: "Error: [error message]"`
+- **Batch Progress**: During batch collection, progress analysis may be sent
+
 ### Response Format
 The server should respond with:
 ```json
@@ -113,8 +119,8 @@ To test with the local server:
 The app shows server communication status in the PyTorch AI Model Results section:
 
 - **📡 Server Status: Ready - Device ID: ...1234** - Ready to send data
-- **📡 Server Status: Sending batch (30 records)...** - Currently sending
-- **📡 Server Status: ✅ Last batch sent successfully** - Successful transmission
+- **📡 Server Status: Sending batch (30 records + AI analysis)...** - Currently sending
+- **📡 Server Status: ✅ Last batch + AI analysis sent successfully** - Successful transmission
 - **📡 Server Status: ⚠️ Error 500 - Internal Server Error** - Server error
 - **📡 Server Status: ❌ Network error: Connection timeout** - Network issues
 
@@ -122,8 +128,9 @@ The app shows server communication status in the PyTorch AI Model Results sectio
 
 ### Batch Collection
 - The app collects network flow data continuously during monitoring
-- Every 30 records, a batch is automatically sent to the server
-- The batch is sent regardless of PyTorch model status (even if AI analysis fails)
+- Every 30 records, a batch is automatically sent to the server **with PyTorch analysis results**
+- The batch includes both flow data and AI analysis results
+- If the PyTorch model is not available, fallback analysis results are sent
 - After sending, the batch is cleared and collection starts again
 
 ### Error Handling
@@ -131,6 +138,7 @@ The app shows server communication status in the PyTorch AI Model Results sectio
 - Server errors (4xx/5xx) are handled gracefully
 - Failed batches are not retried (data is lost)
 - The app continues collecting new batches even after errors
+- **PyTorch analysis is always included**, even if the model fails (with error status)
 
 ### Threading
 - Server communication happens on a background thread
@@ -145,10 +153,11 @@ The app shows server communication status in the PyTorch AI Model Results sectio
 - The `android:usesCleartextTraffic="true"` setting allows HTTP for testing
 
 ### Data Privacy
-- All network flow data is sent to the configured server
+- All network flow data **and PyTorch analysis results** are sent to the configured server
 - The device ID is persistent and can be used to track devices
 - No personal information is included in the payload
 - Network flow data may contain sensitive information about app usage
+- PyTorch analysis results include risk assessments and recommendations
 
 ## Troubleshooting
 
@@ -196,6 +205,8 @@ Return appropriate HTTP status codes:
 - Store the deviceId for tracking
 - Handle potential duplicate batches
 - Consider implementing rate limiting per device
+- **Process PyTorch analysis results** for threat detection and monitoring
+- Store both flow data and AI analysis results for comprehensive analysis
 
 ### Example Server (Python/Flask)
 See `test_server.py` for a complete example implementation. 

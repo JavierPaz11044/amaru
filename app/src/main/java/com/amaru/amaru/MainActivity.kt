@@ -971,11 +971,11 @@ class MainActivity : AppCompatActivity() {
     private fun sendBatchToServer(batchData: List<NetworkFlowStats>, analysisResult: MalwareAnalysisResult? = null) {
         thread {
             try {
-                Log.d(TAG, "📤 Preparing to send batch of ${batchData.size} records to server")
+                Log.d(TAG, "📤 Preparing to send batch of ${batchData.size} records + PyTorch analysis to server")
                 
                 // Update UI to show sending
                 runOnUiThread {
-                    serverStatusText.text = "📡 Server Status: Sending batch (${batchData.size} records)..."
+                    serverStatusText.text = "📡 Server Status: Sending batch (${batchData.size} records + AI analysis)..."
                     serverStatusText.setTextColor(Color.parseColor("#f39c12"))
                 }
                 
@@ -989,7 +989,7 @@ class MainActivity : AppCompatActivity() {
                 )
                 
                 val jsonPayload = gson.toJson(payload)
-                Log.d(TAG, "📋 Payload created: ${jsonPayload.length} characters")
+                Log.d(TAG, "📋 Payload created: ${jsonPayload.length} characters (includes PyTorch analysis: ${analysisResult != null})")
                 
                 // Create request
                 val mediaType = "application/json; charset=utf-8".toMediaType()
@@ -1009,8 +1009,8 @@ class MainActivity : AppCompatActivity() {
                         Log.d(TAG, "✅ Batch sent successfully: ${response.code} - $responseBody")
                         
                         runOnUiThread {
-                            Toast.makeText(this@MainActivity, "✅ Batch sent to server successfully", Toast.LENGTH_SHORT).show()
-                            serverStatusText.text = "📡 Server Status: ✅ Last batch sent successfully"
+                            Toast.makeText(this@MainActivity, "✅ Batch + AI analysis sent successfully", Toast.LENGTH_SHORT).show()
+                            serverStatusText.text = "📡 Server Status: ✅ Last batch + AI analysis sent successfully"
                             serverStatusText.setTextColor(Color.parseColor("#27ae60"))
                         }
                     } else {
