@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Amaru app now automatically sends batches of 30 network flow records to a remote server via HTTP POST requests. Each device generates a unique ID that is consistently used for all requests.
+The Amaru app now automatically sends batches of 30 network flow records **plus PyTorch AI analysis results** to a remote server via HTTP POST requests. Each device generates a unique ID that is consistently used for all requests.
 
 ## Configuration
 
@@ -23,6 +23,7 @@ Each device generates a unique identifier in the format: `AMARU_<timestamp>_<ran
 ## Data Format
 
 ### Request Structure
+The request contains both network flow data and PyTorch AI analysis results:
 ```json
 {
   "deviceId": "AMARU_1703123456789_1234",
@@ -43,9 +44,32 @@ Each device generates a unique identifier in the format: `AMARU_<timestamp>_<ran
       "flowId": "unique_flow_id"
     }
     // ... 29 more flows
-  ]
+  ],
+  "pytorchAnalysis": {
+    "modelStatus": "Active",
+    "mlConfidence": 0.85,
+    "mlRiskLevel": "HIGH",
+    "memoryUtilization": 0.65,
+    "riskLevel": "HIGH",
+    "recommendations": [
+      "🔴 High risk detected in network traffic",
+      "🔍 Review suspicious connections"
+    ],
+    "analysisTimestamp": 1703123456789
+  }
 }
 ```
+
+### PyTorch Analysis Fields
+The `pytorchAnalysis` object contains the following fields:
+
+- **`modelStatus`**: Status of the PyTorch model ("Active", "Not initialized", "Error", etc.)
+- **`mlConfidence`**: Confidence level of the ML prediction (0.0 to 1.0)
+- **`mlRiskLevel`**: Risk level determined by ML model ("SAFE", "LOW", "MEDIUM", "HIGH", "CRITICAL")
+- **`memoryUtilization`**: Memory utilization of the model (0.0 to 1.0)
+- **`riskLevel`**: Final risk assessment ("SAFE", "LOW", "MEDIUM", "HIGH", "CRITICAL")
+- **`recommendations`**: Array of recommendation strings
+- **`analysisTimestamp`**: Timestamp when the analysis was performed
 
 ### Response Format
 The server should respond with:

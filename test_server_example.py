@@ -48,6 +48,20 @@ def receive_batch():
             for key, value in flows[0].items():
                 print(f"  {key}: {value}")
         
+        # Print PyTorch analysis results
+        pytorch_analysis = data.get('pytorchAnalysis')
+        if pytorch_analysis:
+            print(f"PyTorch Analysis Results:")
+            print(f"  Model Status: {pytorch_analysis.get('modelStatus', 'Unknown')}")
+            print(f"  ML Confidence: {pytorch_analysis.get('mlConfidence', 0.0)}")
+            print(f"  Risk Level: {pytorch_analysis.get('riskLevel', 'Unknown')}")
+            print(f"  Memory Utilization: {pytorch_analysis.get('memoryUtilization', 0.0)}")
+            recommendations = pytorch_analysis.get('recommendations', [])
+            if recommendations:
+                print(f"  Recommendations: {', '.join(recommendations)}")
+        else:
+            print("No PyTorch analysis data received")
+        
         # Return success response
         response = {
             'status': 'success',

@@ -443,8 +443,8 @@ class MainActivity : AppCompatActivity() {
                                     // Analyze the latest flow from the batch (the model maintains internal memory)
                                     val result = flowAnalyzer.analyzeFlow(flowStats)
                                     
-                                    // Send batch to server before clearing
-                                    sendBatchToServer(flowBatch.toList())
+                                    // Send batch to server with analysis results
+                                    sendBatchToServer(flowBatch.toList(), result)
                                     
                                     // Clear batch after analysis and sending
                                     flowBatch.clear()
@@ -454,20 +454,22 @@ class MainActivity : AppCompatActivity() {
                                     result
                                 } else {
                                     // Model not initialized, but still send batch to server
-                                    sendBatchToServer(flowBatch.toList())
+                                    val fallbackResult = createFallbackResult("Not initialized", "⚠️ AI model not available - using basic monitoring only")
+                                    sendBatchToServer(flowBatch.toList(), fallbackResult)
                                     
                                     // Clear batch after sending
                                     flowBatch.clear()
                                     batchCount = 0
                                     
-                                    createFallbackResult("Not initialized", "⚠️ AI model not available - using basic monitoring only")
+                                    fallbackResult
                                 }
                             } catch (e: Exception) {
                                 Log.e(TAG, "❌ Error in PyTorch batch analysis", e)
                                 
                                 // Still try to send batch to server even if analysis fails
                                 try {
-                                    sendBatchToServer(flowBatch.toList())
+                                    val errorResult = createFallbackResult("Error: ${e.message}", "❌ AI analysis failed - check logs")
+                                    sendBatchToServer(flowBatch.toList(), errorResult)
                                 } catch (sendError: Exception) {
                                     Log.e(TAG, "❌ Error sending batch after analysis failure", sendError)
                                 }
@@ -966,7 +968,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * Send batch data to server
      */
-    private fun sendBatchToServer(batchData: List<NetworkFlowStats>) {
+    private fun sendBatchToServer(batchData: List<NetworkFlowStats>, analysisResult: MalwareAnalysisResult? = null) {
         thread {
             try {
                 Log.d(TAG, "📤 Preparing to send batch of ${batchData.size} records to server")
@@ -982,7 +984,8 @@ class MainActivity : AppCompatActivity() {
                     deviceId = deviceId,
                     timestamp = System.currentTimeMillis(),
                     batchSize = batchData.size,
-                    flows = batchData.map { flow -> flowToJsonObject(flow) }
+                    flows = batchData.map { flow -> flowToJsonObject(flow) },
+                    pytorchAnalysis = analysisResult?.let { analysisResultToJsonObject(it) }
                 )
                 
                 val jsonPayload = gson.toJson(payload)
@@ -1055,6 +1058,21 @@ class MainActivity : AppCompatActivity() {
             "flowDuration" to flow.flowDuration,
             "label" to flow.label,
             "flowId" to flow.flowId
+        )
+    }
+    
+    /**
+     * Convert MalwareAnalysisResult to JSON object
+     */
+    private fun analysisResultToJsonObject(analysisResult: MalwareAnalysisResult): Map<String, Any> {
+        return mapOf(
+            "modelStatus" to analysisResult.modelStatus,
+            "mlConfidence" to analysisResult.mlConfidence,
+            "mlRiskLevel" to analysisResult.mlRiskLevel.toString(),
+            "memoryUtilization" to analysisResult.memoryUtilization,
+            "riskLevel" to analysisResult.riskLevel.toString(),
+            "recommendations" to analysisResult.recommendations,
+            "analysisTimestamp" to System.currentTimeMillis()
         )
     }
     
@@ -1141,5 +1159,6 @@ data class BatchPayload(
     val deviceId: String,
     val timestamp: Long,
     val batchSize: Int,
-    val flows: List<Map<String, Any>>
+    val flows: List<Map<String, Any>>,
+    val pytorchAnalysis: Map<String, Any>? = null
 )
