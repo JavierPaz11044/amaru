@@ -1044,28 +1044,51 @@ class MainActivity : AppCompatActivity() {
     
     /**
      * Convert NetworkFlowStats to JSON object
+     * Includes all 31 characteristics in the order used by the PyTorch model
      */
     private fun flowToJsonObject(flow: NetworkFlowStats): Map<String, Any> {
         return mapOf(
+            // Flow identification and timing
             "flowStartTime" to flow.flowStartTime,
             "flowEndTime" to flow.flowEndTime,
+            "flowDuration" to (flow.flowEndTime - flow.flowStartTime),
+            "flowId" to "${flow.flowStartTime}_${flow.hashCode()}",
+            
+            // All 31 PyTorch model features (in exact order)
             "totalFwdPackets" to flow.totalFwdPackets,
             "totalBwdPackets" to flow.totalBwdPackets,
             "totalLengthFwdPackets" to flow.totalLengthFwdPackets,
             "totalLengthBwdPackets" to flow.totalLengthBwdPackets,
+            "fwdPacketLengthMax" to flow.fwdPacketLengthMax,
+            "fwdPacketLengthMean" to flow.fwdPacketLengthMean,
+            "fwdPacketLengthStd" to flow.fwdPacketLengthStd,
+            "bwdPacketLengthMax" to flow.bwdPacketLengthMax,
+            "bwdPacketLengthMin" to flow.bwdPacketLengthMin,
+            "bwdPacketLengthMean" to flow.bwdPacketLengthMean,
+            "bwdPacketLengthStd" to flow.bwdPacketLengthStd,
             "flowBytesPerSecond" to flow.flowBytesPerSecond,
             "flowPacketsPerSecond" to flow.flowPacketsPerSecond,
-            "flowDuration" to (flow.flowEndTime - flow.flowStartTime), // Calculate duration in milliseconds
-            "label" to flow.label,
-            "flowId" to "${flow.flowStartTime}_${flow.hashCode()}", // Generate unique flow ID
-            "fwdPacketLengthMean" to flow.fwdPacketLengthMean,
-            "bwdPacketLengthMean" to flow.bwdPacketLengthMean,
-            "packetLengthMean" to flow.packetLengthMean,
             "flowIATMean" to flow.flowIATMean,
+            "flowIATStd" to flow.flowIATStd,
+            "flowIATMax" to flow.flowIATMax,
+            "flowIATMin" to flow.flowIATMin,
             "fwdIATMean" to flow.fwdIATMean,
+            "fwdIATStd" to flow.fwdIATStd,
+            "fwdIATMax" to flow.fwdIATMax,
+            "fwdIATMin" to flow.fwdIATMin,
             "bwdIATMean" to flow.bwdIATMean,
+            "bwdIATStd" to flow.bwdIATStd,
+            "bwdIATMax" to flow.bwdIATMax,
+            "bwdIATMin" to flow.bwdIATMin,
             "minPacketLength" to flow.minPacketLength,
-            "maxPacketLength" to flow.maxPacketLength
+            "maxPacketLength" to flow.maxPacketLength,
+            "packetLengthMean" to flow.packetLengthMean,
+            "packetLengthStd" to flow.packetLengthStd,
+            "fwdPacketsPerSecond" to flow.fwdPacketsPerSecond,
+            "bwdPacketsPerSecond" to flow.bwdPacketsPerSecond,
+            
+            // Classification label (not sent to model, but useful for server)
+            "label" to flow.label
         )
     }
     
@@ -1081,6 +1104,46 @@ class MainActivity : AppCompatActivity() {
             "riskLevel" to analysisResult.riskLevel.toString(),
             "recommendations" to analysisResult.recommendations,
             "analysisTimestamp" to System.currentTimeMillis()
+        )
+    }
+    
+    /**
+     * Extract the 31 PyTorch model features in the correct order
+     * This matches the exact order expected by the PyTorch model
+     */
+    private fun extractPyTorchFeatures(flow: NetworkFlowStats): List<Any> {
+        return listOf(
+            flow.totalFwdPackets,
+            flow.totalBwdPackets,
+            flow.totalLengthFwdPackets,
+            flow.totalLengthBwdPackets,
+            flow.fwdPacketLengthMax,
+            flow.fwdPacketLengthMean,
+            flow.fwdPacketLengthStd,
+            flow.bwdPacketLengthMax,
+            flow.bwdPacketLengthMin,
+            flow.bwdPacketLengthMean,
+            flow.bwdPacketLengthStd,
+            flow.flowBytesPerSecond,
+            flow.flowPacketsPerSecond,
+            flow.flowIATMean,
+            flow.flowIATStd,
+            flow.flowIATMax,
+            flow.flowIATMin,
+            flow.fwdIATMean,
+            flow.fwdIATStd,
+            flow.fwdIATMax,
+            flow.fwdIATMin,
+            flow.bwdIATMean,
+            flow.bwdIATStd,
+            flow.bwdIATMax,
+            flow.bwdIATMin,
+            flow.minPacketLength,
+            flow.maxPacketLength,
+            flow.packetLengthMean,
+            flow.packetLengthStd,
+            flow.fwdPacketsPerSecond,
+            flow.bwdPacketsPerSecond
         )
     }
     

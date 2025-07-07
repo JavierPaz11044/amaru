@@ -26,21 +26,48 @@ Each device generates a unique identifier in the format: `AMARU_<timestamp>_<ran
 The request contains both network flow data and PyTorch AI analysis results:
 
 #### Network Flow Fields
-Each flow record contains the following fields:
+Each flow record contains **all 31 PyTorch model features** plus identification fields:
 
-**Basic Metrics:**
+**Flow Identification:**
 - `flowStartTime`, `flowEndTime`: Flow timestamp boundaries
-- `totalFwdPackets`, `totalBwdPackets`: Packet counts by direction
-- `totalLengthFwdPackets`, `totalLengthBwdPackets`: Total bytes by direction
-- `flowBytesPerSecond`, `flowPacketsPerSecond`: Traffic rates
 - `flowDuration`: Duration in milliseconds (calculated)
 - `flowId`: Unique identifier (generated from timestamp and hash)
 - `label`: Flow classification label
 
-**Statistical Features:**
-- `fwdPacketLengthMean`, `bwdPacketLengthMean`, `packetLengthMean`: Average packet sizes
-- `flowIATMean`, `fwdIATMean`, `bwdIATMean`: Inter-arrival time averages
-- `minPacketLength`, `maxPacketLength`: Packet size range
+**PyTorch Model Features (31 features in exact order):**
+1. `totalFwdPackets` - Total Forward Packets
+2. `totalBwdPackets` - Total Backward Packets  
+3. `totalLengthFwdPackets` - Total Length of Fwd Packets
+4. `totalLengthBwdPackets` - Total Length of Bwd Packets
+5. `fwdPacketLengthMax` - Fwd Packet Length Max
+6. `fwdPacketLengthMean` - Fwd Packet Length Mean
+7. `fwdPacketLengthStd` - Fwd Packet Length Std
+8. `bwdPacketLengthMax` - Bwd Packet Length Max
+9. `bwdPacketLengthMin` - Bwd Packet Length Min
+10. `bwdPacketLengthMean` - Bwd Packet Length Mean
+11. `bwdPacketLengthStd` - Bwd Packet Length Std
+12. `flowBytesPerSecond` - Flow Bytes/s
+13. `flowPacketsPerSecond` - Flow Packets/s
+14. `flowIATMean` - Flow IAT Mean
+15. `flowIATStd` - Flow IAT Std
+16. `flowIATMax` - Flow IAT Max
+17. `flowIATMin` - Flow IAT Min
+18. `fwdIATMean` - Fwd IAT Mean
+19. `fwdIATStd` - Fwd IAT Std
+20. `fwdIATMax` - Fwd IAT Max
+21. `fwdIATMin` - Fwd IAT Min
+22. `bwdIATMean` - Bwd IAT Mean
+23. `bwdIATStd` - Bwd IAT Std
+24. `bwdIATMax` - Bwd IAT Max
+25. `bwdIATMin` - Bwd IAT Min
+26. `minPacketLength` - Min Packet Length
+27. `maxPacketLength` - Max Packet Length
+28. `packetLengthMean` - Packet Length Mean
+29. `packetLengthStd` - Packet Length Std
+30. `fwdPacketsPerSecond` - Fwd Packets/s
+31. `bwdPacketsPerSecond` - Bwd Packets/s
+
+**Note:** These 31 features match exactly the input expected by the PyTorch malware detection model.
 ```json
 {
   "deviceId": "AMARU_1703123456789_1234",
@@ -50,23 +77,40 @@ Each flow record contains the following fields:
     {
       "flowStartTime": 1703123456789,
       "flowEndTime": 1703123456890,
+      "flowDuration": 101,
+      "flowId": "1703123456789_1234567890",
       "totalFwdPackets": 5,
       "totalBwdPackets": 3,
       "totalLengthFwdPackets": 1500,
       "totalLengthBwdPackets": 800,
+      "fwdPacketLengthMax": 1500,
+      "fwdPacketLengthMean": 300.0,
+      "fwdPacketLengthStd": 125.5,
+      "bwdPacketLengthMax": 400,
+      "bwdPacketLengthMin": 64,
+      "bwdPacketLengthMean": 266.67,
+      "bwdPacketLengthStd": 98.3,
       "flowBytesPerSecond": 23.45,
       "flowPacketsPerSecond": 8.2,
-      "flowDuration": 101,
-      "label": "TCP_Flow",
-      "flowId": "1703123456789_1234567890",
-      "fwdPacketLengthMean": 300.0,
-      "bwdPacketLengthMean": 266.67,
-      "packetLengthMean": 287.5,
       "flowIATMean": 25.5,
+      "flowIATStd": 15.2,
+      "flowIATMax": 45,
+      "flowIATMin": 10,
       "fwdIATMean": 30.0,
+      "fwdIATStd": 12.8,
+      "fwdIATMax": 50,
+      "fwdIATMin": 15,
       "bwdIATMean": 20.0,
+      "bwdIATStd": 8.5,
+      "bwdIATMax": 35,
+      "bwdIATMin": 5,
       "minPacketLength": 40,
-      "maxPacketLength": 1500
+      "maxPacketLength": 1500,
+      "packetLengthMean": 287.5,
+      "packetLengthStd": 112.4,
+      "fwdPacketsPerSecond": 4.95,
+      "bwdPacketsPerSecond": 2.97,
+      "label": "TCP_Flow"
     }
     // ... 29 more flows
   ],
