@@ -1055,9 +1055,17 @@ class MainActivity : AppCompatActivity() {
             "totalLengthBwdPackets" to flow.totalLengthBwdPackets,
             "flowBytesPerSecond" to flow.flowBytesPerSecond,
             "flowPacketsPerSecond" to flow.flowPacketsPerSecond,
-            "flowDuration" to flow.flowDuration,
+            "flowDuration" to (flow.flowEndTime - flow.flowStartTime), // Calculate duration in milliseconds
             "label" to flow.label,
-            "flowId" to flow.flowId
+            "flowId" to "${flow.flowStartTime}_${flow.hashCode()}", // Generate unique flow ID
+            "fwdPacketLengthMean" to flow.fwdPacketLengthMean,
+            "bwdPacketLengthMean" to flow.bwdPacketLengthMean,
+            "packetLengthMean" to flow.packetLengthMean,
+            "flowIATMean" to flow.flowIATMean,
+            "fwdIATMean" to flow.fwdIATMean,
+            "bwdIATMean" to flow.bwdIATMean,
+            "minPacketLength" to flow.minPacketLength,
+            "maxPacketLength" to flow.maxPacketLength
         )
     }
     

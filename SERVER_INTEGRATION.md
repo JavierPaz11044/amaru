@@ -24,6 +24,23 @@ Each device generates a unique identifier in the format: `AMARU_<timestamp>_<ran
 
 ### Request Structure
 The request contains both network flow data and PyTorch AI analysis results:
+
+#### Network Flow Fields
+Each flow record contains the following fields:
+
+**Basic Metrics:**
+- `flowStartTime`, `flowEndTime`: Flow timestamp boundaries
+- `totalFwdPackets`, `totalBwdPackets`: Packet counts by direction
+- `totalLengthFwdPackets`, `totalLengthBwdPackets`: Total bytes by direction
+- `flowBytesPerSecond`, `flowPacketsPerSecond`: Traffic rates
+- `flowDuration`: Duration in milliseconds (calculated)
+- `flowId`: Unique identifier (generated from timestamp and hash)
+- `label`: Flow classification label
+
+**Statistical Features:**
+- `fwdPacketLengthMean`, `bwdPacketLengthMean`, `packetLengthMean`: Average packet sizes
+- `flowIATMean`, `fwdIATMean`, `bwdIATMean`: Inter-arrival time averages
+- `minPacketLength`, `maxPacketLength`: Packet size range
 ```json
 {
   "deviceId": "AMARU_1703123456789_1234",
@@ -41,7 +58,15 @@ The request contains both network flow data and PyTorch AI analysis results:
       "flowPacketsPerSecond": 8.2,
       "flowDuration": 101,
       "label": "TCP_Flow",
-      "flowId": "unique_flow_id"
+      "flowId": "1703123456789_1234567890",
+      "fwdPacketLengthMean": 300.0,
+      "bwdPacketLengthMean": 266.67,
+      "packetLengthMean": 287.5,
+      "flowIATMean": 25.5,
+      "fwdIATMean": 30.0,
+      "bwdIATMean": 20.0,
+      "minPacketLength": 40,
+      "maxPacketLength": 1500
     }
     // ... 29 more flows
   ],
