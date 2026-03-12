@@ -1,0 +1,29 @@
+[project]
+name = "amaru"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Javier Paz",email = "lujapak@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11" 
+
+[tool.poetry.scripts]
+start = "amaru.main:main"
+
+
+[tool.poetry.dependencies] 
+python = "^3.11"
+pandas = ">=3.0.1,<4.0.0"
+jupyter = ">=1.1.1,<2.0.0"
+ipykernel = ">=7.2.0,<8.0.0"
+python-dotenv = "^1.2.2"
+
+[tool.poetry]
+packages = [{include = "amaru", from = "src"}]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
