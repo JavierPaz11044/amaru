@@ -3,6 +3,7 @@ import shutil
 import amaru.config.config as config
 import amaru.data_processing.clean_dataset as clean_dataset
 import amaru.data_processing.feature_selection as feature_selection
+import amaru.data_processing.balance_dataset as balance_dataset
 import dotenv
 import os
 import pathlib
@@ -14,6 +15,7 @@ path_config = os.getenv("PATH_CONFIG")
 path_raw_data = os.getenv("BASE_PATH_DATA_RAW")
 path_cleaned = os.getenv("BASE_PATH_DATA_CLEANED")
 path_output = os.getenv("PATH_OUTPUT")
+path_to_process = os.getenv("PATH_TO_PROCESS")
 base_path = os.getenv("BASE_PATH_DATASET")
 """
 Create and replace the folder in the raw data path
@@ -72,4 +74,33 @@ def feature_selection_all_files():
     with open(out_file, "w", encoding="utf-8") as f:
         json.dump({"selected_features": selected, "metadata": meta}, f, indent=2)
     logger.info("Wrote selected features to %s", out_file)
+    return result
+
+
+def balance_dataset_all_files():
+    """
+    For each CSV in cleaned: keep only columns from config (features-metadata + features_by_selection),
+    drop the rest, and write to PATH_TO_PROCESS.
+    """
+    logger = Logger(name="balance_dataset_all_files")
+    if not path_cleaned:
+        logger.error("BASE_PATH_DATA_CLEANED is not set in environment")
+        return None
+    if not path_to_process:
+        logger.error("PATH_TO_PROCESS is not set in environment")
+        return None
+    if not path_config:
+        logger.error("PATH_CONFIG is not set in environment")
+        return None
+    cfg = config.Config(path_config)
+    balancer = balance_dataset.BalanceDataset(
+        path_cleaned=path_cleaned,
+        path_to_process=path_to_process,
+        config=cfg,
+    )
+    result = balancer.run()
+    logger.info("Columns to keep: %s", result["columns_to_keep"])
+    logger.info("Processed %s files into %s", result["num_files"], path_to_process)
+    for p in result["processed"]:
+        logger.info("  %s -> %s (columns_kept=%s)", p["source"], p["destination"], p["columns_kept"])
     return result

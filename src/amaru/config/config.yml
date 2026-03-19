@@ -48,6 +48,9 @@ features_unavailable:
   - Idle Max
   - Idle Min
   - Label
+features-metadata:
+  - label
+  - timestamp
 features_by_selection:
   - total_length_of_fwd_packets
   - total_length_of_bwd_packets

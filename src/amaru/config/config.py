@@ -27,3 +27,13 @@ class Config:
     @property
     def features_available(self):
         return self._config.get("features", [])
+
+    @property
+    def features_metadata(self):
+        """Columns for metadata (e.g. label, timestamp)."""
+        return self._config.get("features-metadata", [])
+
+    @property
+    def features_by_selection(self):
+        """Feature columns from feature selection (to keep for analysis)."""
+        return self._config.get("features_by_selection", [])
