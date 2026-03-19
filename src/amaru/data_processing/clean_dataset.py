@@ -1,11 +1,13 @@
 import pandas as pd
-
+import amaru.config.config as config
 
 class CleanDataset:
-    def __init__(self, path):
+    config = None
+    def __init__(self, path, path_config):
         self.path = path
         self.df = None
         self.metadata = None
+        self.config = config.Config(path_config)
 
     def run(self, label_column=None):
         """
@@ -14,14 +16,15 @@ class CleanDataset:
         Returns dataset and metadata with initial and final row/column counts.
         """
         # Load once and record initial dimensions
-        self.df = pd.read_csv(self.path)
+        self.df = pd.read_csv(self.path, index_col=False)
         initial_num_rows = self.df.shape[0]
         initial_num_columns = self.df.shape[1]
-
+        features = self.config.features
         # Pipeline: format columns -> dropna -> drop duplicates -> optional label
-        self._format_columnas_dataset()
+        self._format_columns_dataset(selected_columns=features)
         self._clean_dropna_dataset()
         self._clean_drop_duplicates_dataset()
+        self._change_name_columns()
         if label_column is not None:
             self._format_label_objective(label_column=label_column)
 
@@ -34,13 +37,13 @@ class CleanDataset:
         }
         return {"dataset": self.df, "metadata": self.metadata}
 
-    def _format_columnas_dataset(self):
+    def _format_columns_dataset(self, selected_columns=None):
         """Format column names: strip, lower, replace spaces and slash."""
         self.df = self.df.copy()
-        self.df.columns = [
-            col.strip().lower().replace(" ", "_").replace("/", "-")
-            for col in self.df.columns
-        ]
+        self.df.columns = [col.strip() for col in self.df.columns]
+        if selected_columns:
+            self.df = self.df[selected_columns]
+        self.df.columns = [col.lower().replace(" ", "_").replace("/", "-") for col in self.df.columns]
 
     def _clean_dropna_dataset(self):
         """Drop rows with any NaN."""
@@ -49,6 +52,11 @@ class CleanDataset:
     def _clean_drop_duplicates_dataset(self):
         """Drop duplicate rows."""
         self.df = self.df.drop_duplicates()
+
+    def _change_name_columns(self):
+        self.df = self.df.rename(columns={
+            "cwe_flag_count": "cwr_flag_count"
+        })
 
     def _format_label_objective(self, label_column="label"):
         """Convert label column to binary (1 for BENIGN, 0 otherwise)."""
