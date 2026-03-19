@@ -53,7 +53,7 @@ def feature_selection_all_files():
         logger.error("BASE_PATH_DATA_CLEANED is not set in environment")
         return None
     fs = feature_selection.FeatureSelection(path_cleaned=path_cleaned)
-    result = fs.run()
+    result = fs.run(show_progress=True)
     selected = result["selected_features"]
     meta = result["metadata"]
     logger.info(

@@ -12,6 +12,8 @@ import pandas as pd
 from sklearn.feature_selection import VarianceThreshold, mutual_info_classif
 from sklearn.model_selection import train_test_split
 
+from amaru.utils import print_progress_bar
+
 
 class FeatureSelection:
     """
@@ -34,6 +36,7 @@ class FeatureSelection:
         label_column: str = "label",
         test_size: float = 0.2,
         random_state: int = 42,
+        show_progress: bool = True,
     ) -> dict:
         """
         Run the full feature selection pipeline. Returns selected feature names and metadata.
@@ -42,7 +45,7 @@ class FeatureSelection:
             dict with "selected_features" (list of column names to use) and "metadata".
         """
         # Load and union all cleaned CSVs
-        df_with_label = self._union_all_files_with_label()
+        df_with_label = self._union_all_files_with_label(show_progress=show_progress)
         df_with_label = df_with_label.drop(columns="timestamp", errors="ignore")
         initial_num_columns = df_with_label.shape[1]
 
@@ -52,7 +55,7 @@ class FeatureSelection:
         )
 
         # Columns to drop by variance (on data without label)
-        df_without_label = self._union_all_files_without_label()
+        df_without_label = self._union_all_files_without_label(show_progress=show_progress)
         df_without_label = df_without_label.drop(columns="timestamp", errors="ignore")
         columns_to_drop_variance = self._get_columns_to_drop_by_variance(
             df_without_label, threshold=variance_threshold
@@ -95,22 +98,32 @@ class FeatureSelection:
             "metadata": self.metadata,
         }
 
-    def _union_all_files_with_label(self) -> pd.DataFrame:
+    def _union_all_files_with_label(self, show_progress: bool = True) -> pd.DataFrame:
         """Union all CSV files under path_cleaned, keeping the label column."""
         list_files = list(self.path_cleaned.rglob("*.csv"))
         if not list_files:
             return pd.DataFrame()
-        return pd.concat([pd.read_csv(f, index_col=False) for f in list_files], ignore_index=True)
+        dfs = []
+        total = len(list_files)
+        for idx, f in enumerate(list_files, start=1):
+            if show_progress:
+                print_progress_bar(idx, total, filename=f.name)
+            dfs.append(pd.read_csv(f, index_col=False))
+        return pd.concat(dfs, ignore_index=True)
 
-    def _union_all_files_without_label(self) -> pd.DataFrame:
+    def _union_all_files_without_label(self, show_progress: bool = True) -> pd.DataFrame:
         """Union all CSV files under path_cleaned, without the label column."""
         list_files = list(self.path_cleaned.rglob("*.csv"))
         if not list_files:
             return pd.DataFrame()
-        return pd.concat(
-            [pd.read_csv(f, index_col=False).drop(columns=["label"], errors="ignore") for f in list_files],
-            ignore_index=True,
-        )
+        dfs = []
+        total = len(list_files)
+        for idx, f in enumerate(list_files, start=1):
+            if show_progress:
+                print_progress_bar(idx, total, filename=f.name)
+            df = pd.read_csv(f, index_col=False)
+            dfs.append(df.drop(columns=["label"], errors="ignore"))
+        return pd.concat(dfs, ignore_index=True)
 
     @staticmethod
     def _get_correlation_matrix_spearman(df: pd.DataFrame) -> pd.DataFrame:
